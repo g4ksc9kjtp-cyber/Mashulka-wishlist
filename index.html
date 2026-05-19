@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Порадуй Машульку 💖 PRO MAX</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #fde2e4, #e0c3fc, #c1fba4);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "🌸 ✿ 🌼 ✿ 🌸 ✿ 🌼 ✿ 🌸";
+      position: fixed;
+      width: 100%;
+      top: 15px;
+      text-align: center;
+      font-size: 40px;
+      opacity: 0.12;
+      animation: float 8s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) }
+      50% { transform: translateY(12px) }
+    }
+
+    .wrap {
+      max-width: 950px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.88);
+      padding: 25px;
+      border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      text-align: center;
+      color: #ff4fa3;
+      margin: 0;
+    }
+
+    .sub {
+      text-align: center;
+      color: #7c5cff;
+      margin-bottom: 20px;
+    }
+
+    .form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    input {
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+    }
+
+    .btn {
+      border: none;
+      padding: 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .add {
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      color: white;
+    }
+
+    .share {
+      background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+      color: white;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 15px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      border: 2px solid #ffe3f1;
+      position: relative;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
+    }
+
+    .card::after {
+      content: "🌸";
+      position: absolute;
+      top: -10px;
+      right: -10px;
+    }
+
+    .title {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .link {
+      font-size: 12px;
+      color: #6c63ff;
+      word-break: break-all;
+      margin-bottom: 8px;
+    }
+
+    .reserved {
+      opacity: 0.45;
+      text-decoration: line-through;
+    }
+
+    .row button {
+      margin-right: 6px;
+      margin-top: 5px;
+      border: none;
+      padding: 7px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .take { background: #22c55e; color: white; }
+    .del { background: #ef4444; color: white; }
+
+    .confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas class="confetti" id="confetti"></canvas>
+
+  <div class="wrap">
+    <h1>💖 Порадуй Машульку</h1>
+    <div class="sub">PRO MAX вишлист с любовью 🌸</div>
+
+    <div class="form">
+      <input id="name" placeholder="Название подарка">
+      <input id="url" placeholder="Ссылка (Ozon / WB)">
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+      <button class="btn add" onclick="addItem()">Добавить 🎁</button>
+      <button class="btn share" onclick="share()">Скопировать ссылку 🔗</button>
+    </div>
+
+    <div class="grid" id="list"></div>
+  </div>
+
+  <script>
+    let list = JSON.parse(localStorage.getItem("wishlist_pro_max")) || [];
+
+    function save() {
+      localStorage.setItem("wishlist_pro_max", JSON.stringify(list));
+    }
+
+    function addItem() {
+      const name = document.getElementById("name").value.trim();
+      const url = document.getElementById("url").value.trim();
+
+      if (!name) return;
+
+      list.push({ name, url, reserved: false });
+      document.getElementById("name").value = "";
+      document.getElementById("url").value = "";
+
+      save();
+      render();
+      confettiBurst();
+    }
+
+    function render() {
+      const root = document.getElementById("list");
+      root.innerHTML = "";
+
+      list.forEach((item, i) => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+          <div class="title ${item.reserved ? 'reserved' : ''}">
+            ${item.name} ${item.reserved ? '🙋' : ''}
+          </div>
+          <div class="link">${item.url || ''}</div>
+          <div class="row">
+            <button class="take" onclick="toggle(${i})">
+              ${item.reserved ? 'Отменить' : 'Я подарю'}
+            </button>
+            <button class="del" onclick="del(${i})">Удалить</button>
+          </div>
+        `;
+
+        root.appendChild(card);
+      });
+    }
+
+    function toggle(i) {
+      list[i].reserved = !list[i].reserved;
+      save();
+      render();
+    }
+
+    function del(i) {
+      list.splice(i, 1);
+      save();
+      render();
+    }
+
+    function share() {
+      navigator.clipboard.writeText(location.href)
+        .then(() => {
+          alert("Ссылка скопирована 💖");
+        })
+        .catch(err => {
+          console.error('Ошибка при копировании: ', err);
+          alert('Не удалось скопировать ссылку');
+        });
+    }
+
+    /* 🎉 простые конфетти */
+    function confettiBurst() {
+      const c = document.getElementById("confetti");
+      const ctx = c.getContext("2d");
+      c.width = window.innerWidth;
+      c.height = window.innerHeight;
+
+      let pieces = Array.from({ length: 80 }).map(() => ({
+        x: Math.random() * c.width,
+        y: Math.random() * c.height,
+        r: Math.random() * 6 + 2,
+        d: Math.random() * 80

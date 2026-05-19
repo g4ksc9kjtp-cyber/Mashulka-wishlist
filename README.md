@@ -1,0 +1,2 @@
+# Mashulka-wishlist
+Вишлист 
